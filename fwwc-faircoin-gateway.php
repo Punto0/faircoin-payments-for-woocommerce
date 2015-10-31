@@ -1,16 +1,16 @@
 <?php
 /*
 Faircoin Payments for WooCommerce
-http://www.punto0.net/
+
 */
 
 // Include everything
 include(dirname(__FILE__) . '/fwwc-include-all.php');
-//   include (dirname(__FILE__) . '/../woocommerce/includes/woocommerce.php');
-//   include (dirname(__FILE__) . '/../woocommerce/woocommerce.php');
 
-//include(dirname(__FILE__) . '/../woocommerce/includes/class-wc-order.php');
-//include(dirname(__FILE__) . '/../woocommerce/includes/emails/class-wc-email-cancelled-order.php');
+
+
+
+
 
 //---------------------------------------------------------------------------
 add_action('plugins_loaded', 'FWWC__plugins_loaded__load_faircoin_gateway', 0);
@@ -114,7 +114,7 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
 	    		$reason_message = __("Faircoin Service Provider is not selected", 'woocommerce');
 	    		$valid = false;
 	    	}
-	    	else if ($this->service_provider=='blockchain.info')
+/*	    	else if ($this->service_provider=='blockchain.info')
 	    	{
 	    		if ($this->faircoin_addr_merchant == '')
 	    		{
@@ -126,7 +126,7 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
 		    		$reason_message = __("Your personal faircoin address is invalid. The address specified is Bitcoinway.com's donation address :)", 'woocommerce');
 		    		$valid = false;
 	    		}
-	    	}
+	    	}*/
 	    	else if ($this->service_provider=='electrum-wallet')
 	    	{
 	    		if (!$this->electrum_master_public_key)
@@ -508,20 +508,11 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
 
 	   			// This function generates temporary faircoin address and schedules IPN callback at the same
 				$ret_info_array = FWWC__generate_temporary_faircoin_address__blockchain_info ($faircoin_addr_merchant, $callback_url);
-	
-				/*
-            $ret_info_array = array (
-               'result'                      => 'success', // OR 'error'
-               'message'										 => '...',
-               'host_reply_raw'              => '......',
-               'generated_faircoin_address'   => '1H9uAP3x439YvQDoKNGgSYCg3FmrYRzpD2', // or false
-               );
-				*/
-//				$faircoins_address = @$ret_info_array['generated_faircoin_address'];
-//			}
+				$faircoins_address = @$ret_info_array['generated_faircoin_address'];
+			}*/
 			if ($this->service_provider == 'electrum-wallet')
 			{
-				// Generate faircoin address for electrum wallet provider.
+			// Generate faircoin address for electrum wallet provider.
 				/*
             $ret_info_array = array (
                'result'                      => 'success', // OR 'error'
@@ -530,8 +521,7 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
                'generated_faircoin_address'   => '1H9uAP3x439YvQDoKNGgSYCg3FmrYRzpD2', // or false
                );
 				*/
-//				$msg = "Trying get a valid address";
-//	      			FWWC__log_event (__FILE__, __LINE__, $msg);
+
          			$ret_info_array = FWWC__get_faircoin_address_for_payment__electrum ($this->electrum_master_public_key, $order_info);
 			}
 //                         $msg = "ret_info_array: ".$ret_info_array['result'].$ret_info_array['generated_faircoin_address'];
@@ -547,7 +537,7 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
       				exit ('<h2 style="color:red;">' . $msg . '</h2>');
 			}
 
-   		FWWC__log_event (__FILE__, __LINE__, " Generated unique faircoin address: '{$faircoins_address}' for order_id " . $order_id);
+//   		FWWC__log_event (__FILE__, __LINE__, " Generated/found faircoin address: '{$faircoins_address}' for order_id " . $order_id);
 /*
 			if ($this->service_provider == 'blockchain.info')
 			{
@@ -608,10 +598,14 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
 
 			// Empty awaiting payment session
 		 unset( $woocommerce->session->order_awaiting_payment );
+
+			$url = $this->get_return_url( $order );
+                        FWWC__log_event(__FILE__, __LINE__, "New order : ".$order_id." FAI address : ".$faircoins_address." url : ".$url);
+
 			 // Return thank you redirect
                         return array(
                               'result'         => 'success',
-                              'redirect'       => $this->get_return_url( $order )
+                              'redirect'       => $url
                           );
 		}
 
@@ -626,7 +620,7 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
 	     */
 		function FWWC__thankyou_page($order_id)
 		{
-			// FWWC__thankyou_page is hooked into the "thank you" page and in the simplest case can just echo’s the description.
+		// FWWC__thankyou_page is hooked into the "thank you" page and in the simplest case can just echo’s the description.
 //	         $msg = "Begin thank you fair payment";
 //                        FWWC__log_event (__FILE__, __LINE__, $msg);
 
@@ -640,8 +634,8 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
 
 
 			$instructions = $this->instructions;
-			$instructions = str_replace ('{{{BITCOINS_AMOUNT}}}',  $order_total_in_fai, $instructions);
-			$instructions = str_replace ('{{{BITCOINS_ADDRESS}}}', $faircoins_address, 	$instructions);
+			$instructions = str_replace ('{{{FAIRCOINS_AMOUNT}}}',  $order_total_in_fai, $instructions);
+			$instructions = str_replace ('{{{FAIRCOINS_ADDRESS}}}', $faircoins_address, 	$instructions);
 			$instructions =
 				str_replace (
 					'{{{EXTRA_INSTRUCTIONS}}}',
@@ -678,8 +672,8 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
 
 
 			$instructions = $this->instructions;
-			$instructions = str_replace ('{{{BITCOINS_AMOUNT}}}',  $order_total_in_fai, 	$instructions);
-			$instructions = str_replace ('{{{BITCOINS_ADDRESS}}}', $faircoins_address, 	$instructions);
+			$instructions = str_replace ('{{{FAIRCOINS_AMOUNT}}}',  $order_total_in_fai, 	$instructions);
+			$instructions = str_replace ('{{{FAIRCOINS_ADDRESS}}}', $faircoins_address, 	$instructions);
 			$instructions =
 				str_replace (
 					'{{{EXTRA_INSTRUCTIONS}}}',
@@ -791,7 +785,7 @@ function FWWC__process_payment_completed_for_order ($order_id, $faircoins_paid=f
 			// Instantiate order object.
 			$order->add_order_note( __('Order paid complete', 'woocommerce') );
 	                $order->payment_complete();
-// Mandamos factura
+                        // Mandamos factura
 			$email = new WC_Email_Customer_Invoice();
 			$email->trigger($order_id);
 //			$order->update_status('completed');//Para disparar el mail, ¿no hay otra forma?
@@ -807,27 +801,11 @@ function FWWC__process_payment_completed_for_order ($order_id, $faircoins_paid=f
 		$order->add_order_note( __('Order paid expired', 'woocommerce') );
 	        $order->update_status("failed",'Not funds arrive at time');
 	// Aquí deberíamos notificar al usuario de alguna forma. ¿Extender WC-Email?
-//		$order->cancel_order();
 //           	$email = new WC_Email_Cancelled_Order($order_id);
 //                $email->trigger($order_id);
 		return true;
 	}
-	return false;	
+	return false;
 }
-//===========================================================================
-/*
-function order_completed( $order_id ) {
-FWWC__log_event (__FILE__, __LINE__, "hook payment_complete...");
-    $order = new WC_Order( $order_id );
-    $to_email = $order["billing_address"];
-    $headers = 'From: Your Name <your@email.com>' . "\r\n";
-    wp_mail($to_email, 'subject', 'message', $headers );
-// function FWWC__send_email ($email_to, $email_from, $subject, $plain_body)
-
-//   $email = new WC_Email_Cancelled_Order();
-}
-
-add_action( 'woocommerce_payment_complete', 'order__completed' );
-*/
 //===========================================================================
 }

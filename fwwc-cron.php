@@ -62,7 +62,7 @@ function FWWC_cron_job_worker ($hardcron=false)
   else
   	$count_rows_for_balance_check = 0;
 
-//  FWWC__log_event (__FILE__, __LINE__,"Cron checking address : ".$count_rows_for_balance_check); 
+  FWWC__log_event (__FILE__, __LINE__,"Cron checking address : ".$count_rows_for_balance_check); 
   if (is_array($rows_for_balance_check))
   {
   	$ran_cycles = 0;
@@ -171,7 +171,7 @@ function FWWC_cron_job_worker ($hardcron=false)
 	        // Update order' meta info
 	        $address_meta['orders'][0]['paid'] = false;
 		// Process and complete the order within WooCommerce (send confirmation emails, etc...)
-	        if (FWWC__process_payment_completed_for_order ($last_order_info['order_id'], $balance_info_array['balance']))
+	        if (!FWWC__process_payment_completed_for_order ($last_order_info['order_id'], $balance_info_array['balance']))
 			FWWC__log_event(__FILE__,__LINE__,"Falló el procesamiento de la orden, ¿borrada desde wp?");
 
 	        // Update address' record
@@ -195,47 +195,45 @@ function FWWC_cron_job_worker ($hardcron=false)
 		  }
 		}
 	}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Search for expired  address
 
-  // Search for expired orders
-  // NULL == not found
-  // Retrieve:
-  //     'assigned'   - unexpired, with old balances (due for revalidation. Fresh balances and still 'assigned' means no [full] payment received yet)
-  //     'revalidate' - all
-  //  order results by most recently assigned
-//  $assigned_address_expires_in_secs = 1300; // Debugging
-//  $funds_received_value_expires_in_secs = 5;
-  $current_time = time();
-//  FWWC__log_event (__FILE__, __LINE__,"Current time : ".$current_time);
 
-  $query =
-    "SELECT * FROM `$fai_addresses_table_name`
-      WHERE ( `status`='used'
-      AND ('$current_time' - `assigned_at`) > '$assigned_address_expires_in_secs'
-      AND ('$current_time' - `received_funds_checked_at`) > '$funds_received_value_expires_in_secs');"; // Check the ones that haven't been checked for longest time
-      $rows_for_balance_check = $wpdb->get_results ($query, ARRAY_A);
 
-  FWWC__log_event (__FILE__, __LINE__,"Query  : ".$query);
+     $assigned_address_expires_in_secs = 130; // Debugging
+    $funds_received_value_expires_in_secs = 130;
+     $current_time = time();
+//   FWWC__log_event (__FILE__, __LINE__,"Current time : ".$current_time);
 
-  if (is_array($rows_for_balance_check))
-  	$count_rows_for_balance_check = count($rows_for_balance_check);
-  else {
-  	$count_rows_for_balance_check = 0;
+    $query =
+      "SELECT * FROM `$fai_addresses_table_name`
+        WHERE ( `status`='used'
+        AND ('$current_time' - `assigned_at`) > '$assigned_address_expires_in_secs'
+        AND ('$current_time' - `received_funds_checked_at`) > '$funds_received_value_expires_in_secs');"; // Check the ones that haven't been checked for longest time
+        $rows_for_check = $wpdb->get_results ($query, ARRAY_A);
+
+//  FWWC__log_event (__FILE__, __LINE__,"Query  : ".$query);
+
+    if (is_array($rows_for_check))
+  	$count_rows_for_check = count($rows_for_check);
+    else {
+  	$count_rows_for_check = 0;
 //        FWWC__log_event (__FILE__, __LINE__,"ERROR : ".$rows_for_balance_check); 
 	}
 
-  FWWC__log_event (__FILE__, __LINE__,"Cron checking for expired orders  : ".$count_rows_for_balance_check); 
-  if (is_array($rows_for_balance_check))
-  {
-  	foreach ($rows_for_balance_check as $row_for_balance_check)
+   FWWC__log_event (__FILE__, __LINE__,"Cron checking for expired orders  : ".$count_rows_for_check); 
+    if (is_array($rows_for_check))
+    {
+  	foreach ($rows_for_check as $row_for_check)
   	{
-		if ($row_for_balance_check)
+		if ($row_for_check)
 		{
 		 	// Prepare 'address_meta' for use.
-		  	$address_meta    = FWWC_unserialize_address_meta (@$row_for_balance_check['address_meta']);
+		  	$address_meta    = FWWC_unserialize_address_meta (@$row_for_check['address_meta']);
 		  	$last_order_info = @$address_meta['orders'][0];
-		  	$row_id       = $row_for_balance_check['id'];
+		  	$row_id       = $row_for_check['id'];
                    // Process and complete the order within WooCommerce (send confirmation emails, etc...)
-                if (FWWC__process_payment_completed_for_order ($last_order_info['order_id'], $balance_info_array['balance']))
+                if (!FWWC__process_payment_completed_for_order ($last_order_info['order_id'], false))
                         FWWC__log_event(__FILE__,__LINE__,"Falló el procesamiento de la orden, ¿borrada desde wp?");
 
 	        // Update address' record
@@ -245,11 +243,10 @@ function FWWC_cron_job_worker ($hardcron=false)
 	        //
           // Mark the address to use it again
 	        	$query = "UPDATE `$fai_addresses_table_name`
-	             		SET `status`='unused',
+	             		SET `status`='unused'
                 		WHERE `id`='$row_id';";
 	        	$ret_code = $wpdb->query ($query);
-                  	  FWWC__log_event (__FILE__, __LINE__,"Query  : ".$query);
-			FWWC__log_event (__FILE__, __LINE__, "Query ret code : ".$ret_code);
+			FWWC__log_event (__FILE__, __LINE__, "Order expired : ".$last_order_info['order_id']);
 		}
 	}
   }
@@ -292,7 +289,7 @@ function FWWC_cron_job_worker ($hardcron=false)
 
       if ($total_unused_addresses < $fwwc_settings['max_unused_addresses_buffer'])
       {
-         FWWC__log_event (__FILE__, __LINE__,"Generating new address ");
+//        FWWC__log_event (__FILE__, __LINE__,"Generating new address ");
         FWWC__generate_new_faircoin_address_for_electrum_wallet ($fwwc_settings, $electrum_mpk);
       }
     }

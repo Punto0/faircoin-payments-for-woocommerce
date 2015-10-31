@@ -75,7 +75,7 @@ function FWWC__get_faircoin_address_for_payment__electrum ($electrum_mpk, $order
 
          if (!$clean_address)
    	{
-       FWWC__log_event (__FILE__, __LINE__,"NO CLEAN ADDRESS! ".$query); 
+//       FWWC__log_event (__FILE__, __LINE__,"NO CLEAN ADDRESS! ".$query); 
       //-------------------------------------------------------
       // Find all unused addresses belonging to this mpk with possibly (to be verified right after) zero balances
       // Array(rows) or NULL
@@ -107,7 +107,7 @@ function FWWC__get_faircoin_address_for_payment__electrum ($electrum_mpk, $order
                )
             ORDER BY `index_in_wallet` ASC;"; // Try to use lower indexes first
        $addresses_to_verify_for_zero_balances_rows = $wpdb->get_results ($query, ARRAY_A);
-       FWWC__log_event (__FILE__, __LINE__,"Buscando address from query : ".$query);
+//       FWWC__log_event (__FILE__, __LINE__,"Buscando address from query : ".$query);
        if (!is_array($addresses_to_verify_for_zero_balances_rows))
           $addresses_to_verify_for_zero_balances_rows = array();
       //-------------------------------------------------------
@@ -616,8 +616,8 @@ function FWWC__get_exchange_rate_per_faircoin ($currency_code, $rate_retrieval_m
 	if ($get_ticker_string)
 	{
 		if ($fair_rate) {
-//			$msg = str_replace('{{{EXCHANGE_RATE}}}', $fair_rate, $ticker_string);			
-//			FWWC__log_event (__FILE__, __LINE__, $msg);
+			$msg = str_replace('{{{EXCHANGE_RATE}}}', $fair_rate, $ticker_string);			
+			FWWC__log_event (__FILE__, __LINE__, $msg);
 			return str_replace('{{{EXCHANGE_RATE}}}', $fair_rate, $ticker_string);
 		} else
 		{
@@ -626,8 +626,8 @@ function FWWC__get_exchange_rate_per_faircoin ($currency_code, $rate_retrieval_m
 			$fns = array_filter ($fns, 'FWWC__function_not_exists');
 			if (count($fns))
 				$extra_error_message = "The following PHP functions are disabled on your server: " . implode (", ", $fns) . ".";
-//			$msg = str_replace('{{{ERROR_MESSAGE}}}', $extra_error_message, $ticker_string_error);
-//			FWWC__log_event (__FILE__, __LINE__, $msg);
+			$msg = str_replace('{{{ERROR_MESSAGE}}}', $extra_error_message, $ticker_string_error);
+			FWWC__log_event (__FILE__, __LINE__, $msg);
 			return str_replace('{{{ERROR_MESSAGE}}}', $extra_error_message, $ticker_string_error);
 		}
 	}
@@ -643,7 +643,7 @@ function FWWC__function_not_exists ($fname) { return !function_exists($fname); }
 function FWWC__update_exchange_rate_cache ($currency_code, $requested_cache_method_type, $exchange_rate){
   // Save new currency exchange rate info in cache
   $time = time();
-  FWWC__log_event (__FILE__, __LINE__,"Updating cache rate : " .$currency_code." rate type : ".$requested_cache_method_type." exchange rate : ".$exchange_rate." time : ".$time);
+  FWWC__log_event (__FILE__, __LINE__,"Updating cache rate : " .$currency_code." rate type : ".$requested_cache_method_type." exchange rate : ".$exchange_rate);
   $fwwc_settings = FWWC__get_settings ();   // Re-get settings in case other piece updated something while we were pulling exchange rate API's...
   $fwwc_settings['exchange_rates'][$currency_code][$requested_cache_method_type]['time-last-checked'] = $time;
   $fwwc_settings['exchange_rates'][$currency_code][$requested_cache_method_type]['exchange_rate'] = $exchange_rate;
@@ -660,7 +660,7 @@ function FWWC__get_exchange_rate_from_getfaircoin ($currency_code, $rate_type, $
     $result = @FWWC__file_get_contents ($source_url, false, $fwwc_settings['exchange_rate_api_timeout_secs']);
     $obj = json_decode($result,false);
     $rate = $obj->{'eur-fair'}; 
-    $msg = "Rate from getfaircoin.net : ".$rate;
+//    $msg = "Rate from getfaircoin.net : ".$rate;
     FWWC__log_event (__FILE__, __LINE__, $msg);
     return $rate;
 }
