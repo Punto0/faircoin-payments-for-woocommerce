@@ -60,7 +60,7 @@ function FWWC_cron_job_worker ($hardcron=false)
   else
   	$count_rows_for_balance_check = 0;
 
-  FWWC__log_event (__FILE__, __LINE__,"Cron checking address : ".$count_rows_for_balance_check); 
+//  FWWC__log_event (__FILE__, __LINE__,"Cron checking address : ".$count_rows_for_balance_check); 
   if (is_array($rows_for_balance_check))
   {
   	$ran_cycles = 0;
@@ -158,7 +158,7 @@ function FWWC_cron_job_worker ($hardcron=false)
 	                			      `address_meta`='$address_meta_serialized'
 	                                          WHERE `id`='$row_id';";
 	                                $ret_code = $wpdb->query ($query);
-	        			FWWC__log_event (__FILE__, __LINE__, "Cron job: SUCCESS: Order ID '{$last_order_info['order_id']}' successfully completed.");
+//	        			FWWC__log_event (__FILE__, __LINE__, "Cron job: SUCCESS: Order ID '{$last_order_info['order_id']}' successfully completed.");
 		    		}
 		  	} // End balance > 0
 
@@ -172,8 +172,8 @@ function FWWC_cron_job_worker ($hardcron=false)
 
 
 
-    $assigned_address_expires_in_secs = 130; // Debugging
-    $funds_received_value_expires_in_secs = 130;
+//    $assigned_address_expires_in_secs = 130; // Debugging
+//    $funds_received_value_expires_in_secs = 130;
 
     $query = "SELECT * FROM `$fai_addresses_table_name`
               WHERE ( `status`='assigned') 
@@ -187,7 +187,7 @@ function FWWC_cron_job_worker ($hardcron=false)
     else 
   	$count_rows_for_check = 0;
 
-   FWWC__log_event (__FILE__, __LINE__,"Cron checking for expired orders  : ".$count_rows_for_check); 
+//   FWWC__log_event (__FILE__, __LINE__,"Cron checking for expired orders  : ".$count_rows_for_check); 
     if (is_array($rows_for_check))
     {
   	foreach ($rows_for_check as $row_for_check)
@@ -212,7 +212,7 @@ function FWWC_cron_job_worker ($hardcron=false)
 	             		SET `status`='unused'
                 		WHERE `id`='$row_id';";
 	        	$ret_code = $wpdb->query ($query);
-			FWWC__log_event (__FILE__, __LINE__, "Order expired : ".$last_order_info['order_id']);
+//			FWWC__log_event (__FILE__, __LINE__, "Order expired : ".$last_order_info['order_id']);
 		}
 	}
   }

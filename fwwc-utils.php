@@ -454,10 +454,10 @@ function FWWC__getreceivedbyaddress_info ($fai_address, $required_confirmations=
 
    // Help: https://chain.fair-coin.org/chain/FairCoin/q/
    // https://chain.fair-coin.org/chain/FairCoin/q/getreceivedbyaddress/fNUaPBpZod7CYXiHyvjYA2hT94ZqP2MAuK == 1
-   $url = 'https://chain.fair-coin.org/chain/FairCoin/q/getreceivedbyaddress/'.$fai_address;
+   $url = 'https://chain.fair-coin.org/chain/FairCoin/q/addressbalance/'.$fai_address;
    $funds_received = FWWC__file_get_contents ($url, true, $api_timeout);
 
-   FWWC__log_event (__FILE__, __LINE__, "address request : ".$fai_address." - funds received " . $funds_received);
+//   FWWC__log_event (__FILE__, __LINE__, "address request : ".$fai_address." - funds received " . $funds_received);
    if (is_numeric($funds_received))
    {
     $ret_info_array = array (

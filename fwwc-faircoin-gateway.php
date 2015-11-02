@@ -619,7 +619,7 @@ FWWC__log_event(__FILE__, __LINE__, "Resultado payment : ".$result['result']." N
 		function FWWC__thankyou_page($order_id)
 		 {
 		// FWWC__thankyou_page is hooked into the "thank you" page and in the simplest case can just echo’s the description.
-                        FWWC__log_event (__FILE__, __LINE__, "Begin thank you");
+//                        FWWC__log_event (__FILE__, __LINE__, "Begin thank you");
 
 			// Get order object.
 			// http://wcdocs.woothemes.com/apidocs/class-WC_Order.html
@@ -638,7 +638,7 @@ FWWC__log_event(__FILE__, __LINE__, "Resultado payment : ".$result['result']." N
 					$instructions
 					);
                 $order->add_order_note( __("Order instructions: price=&#3647;{$order_total_in_fai}, incoming account:{$faircoins_address}", 'woocommerce'));
-                FWWC__log_event (__FILE__, __LINE__, "end thank you: ".$instructions);
+//                FWWC__log_event (__FILE__, __LINE__, "end thank you: ".$instructions);
 	        echo wpautop (wptexturize ($instructions));
 		}
 //-------------------------------------------------------------------
@@ -654,7 +654,7 @@ FWWC__log_event(__FILE__, __LINE__, "Resultado payment : ".$result['result']." N
 	     */
 	       function FWWC__email_instructions ($order, $sent_to_admin)
 	       {
-                 FWWC__log_event (__FILE__, __LINE__, "Begin email to admin : ".$sent_to_admin);
+//                 FWWC__log_event (__FILE__, __LINE__, "Begin email to admin : ".$sent_to_admin);
 
 	    	if ($sent_to_admin) return;
 	    	if (!in_array($order->status, array('pending', 'on-hold'), true)) return;
@@ -671,7 +671,7 @@ FWWC__log_event(__FILE__, __LINE__, "Resultado payment : ".$result['result']." N
 		$instructions =	str_replace ('{{{EXTRA_INSTRUCTIONS}}}',
 					$this->instructions_multi_payment_str,
 					$instructions  );
-                FWWC__log_event (__FILE__, __LINE__, "End email");
+//                FWWC__log_event (__FILE__, __LINE__, "End email");
                 echo wpautop (wptexturize ($instructions));
 		}
 		//-------------------------------------------------------------------
@@ -683,15 +683,25 @@ FWWC__log_event(__FILE__, __LINE__, "Resultado payment : ".$result['result']." N
 
 	// Disable unnecessary billing fields.
 	/// Note: it affects whole store.
-	/// add_filter ('woocommerce_checkout_fields' , 	'FWWC__woocommerce_checkout_fields' );
+	 add_filter ('woocommerce_checkout_fields' , 	'FWWC__woocommerce_checkout_fields' );
 
-	add_filter ('woocommerce_currencies', 			'FWWC__add_fai_currency');
-	add_filter ('woocommerce_currency_symbol', 		'FWWC__add_fai_currency_symbol', 10, 2);
+	 add_filter ('woocommerce_currencies', 			'FWWC__add_fai_currency');
+	 add_filter ('woocommerce_currency_symbol', 		'FWWC__add_fai_currency_symbol', 10, 2);
 
 	// Change [Order] button text on checkout screen.
-    /// Note: this will affect all payment methods.
-    /// add_filter ('woocommerce_order_button_text', 	'FWWC__order_button_text');
+        /// Note: this will affect all payment methods.
+        /// add_filter ('woocommerce_order_button_text', 'FWWC__order_button_text');
 	//-----------------------------------------------------------------------
+	// Nos enviamos una copia a nosotros de las facturas cuando hayan sido completadas
+        add_filter( 'woocommerce_email_headers', 'FWWC_headers_filter_function', 10, 2);
+	function FWWC_headers_filter_function( $headers, $object ) {
+//	    FWWC__log_event(__FILE__,__LINE_, "Objeto recibido : " $object;
+	    if ($object == 'customer_invoice') {
+		$email = get_option('admin_email');
+        	$headers .= "BCC: ".$email. " \r\n";
+    	    }
+	    return $headers;
+	}
 	//=======================================================================
 
 	//=======================================================================
@@ -764,7 +774,7 @@ FWWC__log_event(__FILE__, __LINE__, "Resultado payment : ".$result['result']." N
 		$order = new WC_Order($order_id);
 		if ($faircoins_paid)
 		{
-        		FWWC__log_event (__FILE__, __LINE__, "Dentro del if faircoins_paid ...");
+
         		update_post_meta ($order_id, 'faircoins_paid_total', $faircoins_paid);
 			// Payment completed
 			// Make sure this logic is done only once, in case customer keep sending payments :)
@@ -797,13 +807,15 @@ FWWC__log_event(__FILE__, __LINE__, "Resultado payment : ".$result['result']." N
 //           			$email = new WC_Email_Cancelled_Order($order_id);
 //              		$email->trigger($order_id);
 				// Notificamos al admin
-				$email = new WC_Email_Admin_Cancelled_Order(); // No encuentra esta clase...
-				$email->trigger($order_id);
+//				$email = new WC_Email_Admin_Cancelled_Order(); // No encuentra esta clase...
+//				$email->trigger($order_id);
 				return true;
 			}
-			else // El pago se completa en el último momento o error 
+			else 
+// El pago se completa en el último momento o error. Hay que volver a chequear si el pago está completo, pero no se hará normalmente xq la dirección ha expirado 
 			{
-				FWWC__log_event (__FILE__, __LINE__, "El pago de esta orden ya ha sido completado ...");
+				FWWC__log_event (__FILE__, __LINE__, "El pago de esta orden '{order_id}' ya ha sido completado ...");
+				// ... //
 				return true; // Para limpiar la dirección 
 			}
 		}
