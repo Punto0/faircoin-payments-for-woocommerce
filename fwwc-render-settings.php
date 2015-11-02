@@ -1,7 +1,7 @@
 <?php
 /*
 Faircoin Payments for WooCommerce
-http://www.sareanweb.net
+
 */
 
 // Include everything
@@ -132,7 +132,7 @@ function FWWC__render_general_settings_page_html ()
                 <?php echo '<tt style="background-color:#FFA;color:#B00;padding:0px 6px;">wget -O /dev/null ' . $g_FWWC__cron_script_url . '?hardcron=1</tt>'; ?>
                 <br /><u>Note:</u> You will need to deactivate/reactivate plugin after changing this setting for it to have effect.<br />
                 "Hard" cron jobs may not be properly supported by all hosting plans (many shared hosting plans has restrictions in place).
-                <br />For secure, fast hosting service optimized for wordpress and 100% compatibility with WooCommerce and Faircoin payments we recommend <b><a href="http://sareanweb.net" target="_blank">SareannWeb Hosting</a></b>.
+                <br />For secure, fast hosting service optimized for wordpress and 100% compatibility with WooCommerce and Faircoin payments we recommend <b><a href="http://sareanweb.net" target="_blank">Punto0 Hosting</a></b>.
               </p>
             </td>
         </tr>

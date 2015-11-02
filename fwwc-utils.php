@@ -1,7 +1,7 @@
 <?php
 /*
 Faircoin Payments for WooCommerce
-http://www.punto0.net/
+
 */
 
 //===========================================================================
@@ -557,8 +557,9 @@ function FWWC__generate_temporary_faircoin_address__blockchain_info ($forwarding
 //                 Note: This is the least favorable exchange rate for the store customer.
 // $get_ticker_string - true - ticker string of all exchange types for the given currency.
 
-function FWWC__get_exchange_rate_per_faircoin ($currency_code, $rate_retrieval_method = 'getfirst', $rate_type = 'vwap', $get_ticker_string=false)
+function FWWC__get_exchange_rate_per_faircoin ($currency_code, $rate_retrieval_method = 'getfirst', $rate_type = 'vwap', $get_ticker_string)
 {
+//   FWWC__log_event (__FILE__, __LINE__,"Begin get_exchange");
    if ($currency_code == 'FAI')
       return "1.00";   // 1:1
 
@@ -574,21 +575,15 @@ function FWWC__get_exchange_rate_per_faircoin ($currency_code, $rate_retrieval_m
 	$requested_cache_method_type = $rate_retrieval_method . '|' . $rate_type;
 	$ticker_string = "<span style='color:darkgreen;'>Current Rates for 1 Faircoin (in {$currency_code})={{{EXCHANGE_RATE}}}</span>";
 	$ticker_string_error = "<span style='color:red;background-color:#FFA'>WARNING: Cannot determine exchange rates (for '$currency_code')! {{{ERROR_MESSAGE}}} Make sure your PHP settings are configured properly and your server can (is allowed to) connect to external WEB services via PHP.</span>";
-// Hay lío con el array para varios tipos de moneda y tipos de conversión, se sobrescribe y no da el resultado correcto
-// Además esto se ejecuta demasiadas veces, tiene varios puntos de entrada que habría que depurar.
-// Como sólo necesitamos un tipo de cambio y getfaircoin.net sólo proporciona un tipo de cambio...
-// Si se quiere ampliar a varios tipos de cambios habría que corregir la chapuza ésta
-//	$this_currency_info = @$fwwc_settings['exchange_rates'][$currency_code][$requested_cache_method_type];
+	$this_currency_info = @$fwwc_settings['exchange_rates'][$currency_code][$requested_cache_method_type];
 
 //        FWWC__log_event (__FILE__, __LINE__,"Looking cache. Last checked : ".$this_currency_info['time-last-checked']. " currency : ".$currency_code." type : ".$requested_cache_method_type); 
 
-//	if ($this_currency_info & $isset($this_currency_info['time-last-checked']))
-//	{
-//
-//  Esto falla no devuelve nada
-//          $exchange_rate = @$fwwc_settings['exchange_rates'][$currency_code][$requested_cache_method_type]['exchange_rate'];
+	if ($this_currency_info)
+	{
+          $exchange_rate = @$fwwc_settings['exchange_rates'][$currency_code][$requested_cache_method_type]['exchange_rate'];
           $exchange_rate = $fwwc_settings['exchange_rates']['EUR']['getfirst|vwap']['exchange_rate'];
-//          FWWC__log_event (__FILE__, __LINE__," Cached rate :".$exchange_rate);
+
           $cache_last_checked = @$fwwc_settings['exchange_rates'][$currency_code][$requested_cache_method_type]['time-last-checked'];
 	  $delta = $current_time - $cache_last_checked;
           $cache_time = $fwwc_settings['cache_exchange_rates_for_minutes'] * 60;
@@ -604,18 +599,16 @@ function FWWC__get_exchange_rate_per_faircoin ($currency_code, $rate_retrieval_m
 	  	else
 	  		return $exchange_rate;
 	  }
-//	} // Final del if comentado 
-//  else
-//  {
-//    FWWC__log_event (__FILE__, __LINE__,"No set, no looking for ".$requested_cache_method_type." rate in cache: ".$this_currency_info['exchange_rate']); 
-//  }
-// Chequeamos getfaircoin.net si no se ha disparado la cache
-  $fair_rate = FWWC__get_exchange_rate_from_getfaircoin($currency_code, $rate_type, $fwwc_settings);
-  if ($fair_rate)
-        FWWC__update_exchange_rate_cache ($currency_code, 'getfirst|vwap', $fair_rate);
-	if ($get_ticker_string)
+	}
+        else
+          FWWC__log_event (__FILE__, __LINE__,"No set, no looking for ".$requested_cache_method_type." rate in cache: ".$this_currency_info['exchange_rate']); 
+       // Chequeamos getfaircoin.net si no se ha disparado la cache
+       $fair_rate = FWWC__get_exchange_rate_from_getfaircoin($currency_code, $rate_type, $fwwc_settings);
+       if ($fair_rate)
+         FWWC__update_exchange_rate_cache ($currency_code, 'getfirst|vwap', $fair_rate);
+       if ($get_ticker_string)
 	{
-		if ($fair_rate) {
+	  if ($fair_rate) {
 			$msg = str_replace('{{{EXCHANGE_RATE}}}', $fair_rate, $ticker_string);			
 			FWWC__log_event (__FILE__, __LINE__, $msg);
 			return str_replace('{{{EXCHANGE_RATE}}}', $fair_rate, $ticker_string);
@@ -660,7 +653,7 @@ function FWWC__get_exchange_rate_from_getfaircoin ($currency_code, $rate_type, $
     $result = @FWWC__file_get_contents ($source_url, false, $fwwc_settings['exchange_rate_api_timeout_secs']);
     $obj = json_decode($result,false);
     $rate = $obj->{'eur-fair'}; 
-//    $msg = "Rate from getfaircoin.net : ".$rate;
+    $msg = "Rate from getfaircoin.net retrieved: ".$rate;
     FWWC__log_event (__FILE__, __LINE__, $msg);
     return $rate;
 }

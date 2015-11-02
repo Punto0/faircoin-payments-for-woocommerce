@@ -49,10 +49,10 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
 	     */
 		public function __construct()
 		{
-      $this->id				= 'faircoin';
-      $this->icon 			= plugins_url('/images/faircoin_px32.png', __FILE__);	// 32 pixels high
-      $this->has_fields 		= false;
-      $this->method_title     = __( 'Faircoin', 'woocommerce' );
+      			$this->id 		= 'faircoin';
+      			$this->icon 		= plugins_url('/images/faircoin_px32.png', __FILE__);	// 32 pixels high
+     			$this->has_fields 	= false;
+      			$this->method_title     = __( 'Faircoin', 'woocommerce' );
 
 			// Load the settings.
 			$this->init_settings();
@@ -75,15 +75,15 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
 			$this->init_form_fields();
 
 			// Actions
-      if ( version_compare( WOOCOMMERCE_VERSION, '2.0.0', '>=' ) )
-        add_action('woocommerce_update_options_payment_gateways_' . $this->id, array( &$this, 'process_admin_options' ) );
-      else
+      			if ( version_compare( WOOCOMMERCE_VERSION, '2.0.0', '>=' ) )
+			        add_action('woocommerce_update_options_payment_gateways_' . $this->id, array( &$this, 'process_admin_options' ) );
+      			else
 				add_action('woocommerce_update_options_payment_gateways', array(&$this, 'process_admin_options')); // hook into this action to save options in the backend
 
-	    add_action('woocommerce_thankyou_' . $this->id, array(&$this, 'FWWC__thankyou_page')); // hooks into the thank you page after payment
+	    		add_action('woocommerce_thankyou_' . $this->id, array(&$this, 'FWWC__thankyou_page')); // hooks into the thank you page after payment
 
-	    	// Customer Emails
-	    add_action('woocommerce_email_before_order_table', array(&$this, 'FWWC__email_instructions'), 10, 2); // hooks into the email template to show additional details
+	    		// Customer Emails
+	    		add_action('woocommerce_email_before_order_table', array(&$this, 'FWWC__email_instructions'), 10, 2); // hooks into the email template to show additional details
 
 			// Hook IPN callback logic
 			if (version_compare (WOOCOMMERCE_VERSION, '2.0', '<'))
@@ -93,7 +93,7 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
 
 			// Validate currently set currency for the store. Must be among supported ones.
 			if (!$this->FWWC__is_gateway_valid_for_use()) $this->enabled = false;
-	    }
+	    	}
 		//-------------------------------------------------------------------
 
 		//-------------------------------------------------------------------
@@ -222,7 +222,7 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
   </tr>
   <tr class="bpit-table-row">
     <td style="vertical-align:middle;" class="bpit-td-name bpit-td-name-amount">
-      ' . __('Amount', 'woocommerce') . ' (<strong>FIA</strong>):
+      ' . __('Amount', 'woocommerce') . ' (<strong>FAI</strong>):
     </td>
     <td class="bpit-td-value bpit-td-value-amount">
       <div style="border:1px solid #FCCA09;padding:2px 6px;margin:2px;background-color:#FCF8E3;border-radius:4px;color:#CC0000;font-weight: bold;font-size: 120%;">
@@ -378,7 +378,7 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
 									'</table>' .
 									__('Please note:', 'woocommerce' ) .
 									'<ol>' .
-									'   <li>' . __('You must make a payment within 8 hours, or your order will be cancelled', 'woocommerce' ) . '</li>' .
+									'   <li>' . __('You must make a payment within 4 hours, or your order will be cancelled', 'woocommerce' ) . '</li>' .
 									'   <li>' . __('As soon as your payment is received in full you will receive email confirmation with order delivery details.', 'woocommerce' ) . '</li>' .
 									'   <li>{{{EXTRA_INSTRUCTIONS}}}</li>' .
 									'</ol>'
@@ -445,10 +445,9 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
 	    				$fwwc_settings['gateway_settings'][$trimmed_varname] = $varvalue;
 	    		}
 	    	}
-
-	  		// Update gateway settings within BWWC own settings for easier access.
-	      FWWC__update_settings ($fwwc_settings);
-	    }
+	  	// Update gateway settings within BWWC own settings for easier access.
+		FWWC__update_settings ($fwwc_settings);
+	}
     }
 		//-------------------------------------------------------------------
 
@@ -470,14 +469,14 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
 			//
 			// Calculate realtime faircoin price (if exchange is necessary)
 
-			$exchange_rate = FWWC__get_exchange_rate_per_faircoin (get_woocommerce_currency(), 'getfirst', 'vwap');
+			$exchange_rate = FWWC__get_exchange_rate_per_faircoin (get_woocommerce_currency(), 'getfirst', 'vwap', false);
 			/// $exchange_rate = FWWC__get_exchange_rate_per_faircoin (get_woocommerce_currency(), $this->exchange_rate_retrieval_method, $this->exchange_rate_type);
 			if (!$exchange_rate)
 			{
 				$msg = 'ERROR: Cannot determine Faircoin exchange rate. Possible issues: store server does not allow outgoing connections, exchange rate servers are blocking incoming connections or down. ' .
 					   'You may avoid that by setting store currency directly to Faircoin(FAI)';
-      			FWWC__log_event (__FILE__, __LINE__, $msg);
-      			exit ('<h2 style="color:red;">' . $msg . '</h2>');
+	      			FWWC__log_event (__FILE__, __LINE__, $msg);
+      				exit ('<h2 style="color:red;">' . $msg . '</h2>');
 			}
 
 			$order_total_in_fai   = ($order->get_total() / $exchange_rate);
@@ -487,9 +486,9 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
 
 			$order_total_in_fai   = sprintf ("%.8f", $order_total_in_fai);
 
-  		$faircoins_address = false;
-
-  		$order_info =
+  			$faircoins_address = false;
+	
+  			$order_info =
   			array (
   				'order_id'				=> $order_id,
   				'order_total'			=> $order_total_in_fai,
@@ -497,7 +496,7 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
   				'requested_by_ip'	=> @$_SERVER['REMOTE_ADDR'],
   				);
 
-  		$ret_info_array = array();
+  			$ret_info_array = array();
 /*
 			if ($this->service_provider == 'blockchain.info')
 			{
@@ -524,12 +523,12 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
 
          			$ret_info_array = FWWC__get_faircoin_address_for_payment__electrum ($this->electrum_master_public_key, $order_info);
 			}
-//                         $msg = "ret_info_array: ".$ret_info_array['result'].$ret_info_array['generated_faircoin_address'];
-//                          FWWC__log_event (__FILE__, __LINE__, $msg); 
+                        $msg = "ret_info_array: ".$ret_info_array['result'].$ret_info_array['generated_faircoin_address'];
+                        FWWC__log_event (__FILE__, __LINE__, $msg); 
 
                         if ($ret_info_array['result'] == 'success')
 				    $faircoins_address = $ret_info_array['generated_faircoin_address'];
-//                     FWWC__log_event (__FILE__, __LINE__, $faircoins_address);
+                        FWWC__log_event (__FILE__, __LINE__, $faircoins_address);
 			if (!$faircoins_address)
 			{
 				$msg = "ERROR: cannot generate faircoin address for the order: " . @$ret_info_array['message'];
@@ -537,7 +536,7 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
       				exit ('<h2 style="color:red;">' . $msg . '</h2>');
 			}
 
-//   		FWWC__log_event (__FILE__, __LINE__, " Generated/found faircoin address: '{$faircoins_address}' for order_id " . $order_id);
+   		        FWWC__log_event (__FILE__, __LINE__, " Generated/found faircoin address: '{$faircoins_address}' for order_id " . $order_id);
 /*
 			if ($this->service_provider == 'blockchain.info')
 			{
@@ -548,64 +547,63 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
 	     		);
 	 		}
 */
-     	update_post_meta (
-     		$order_id, 			// post id ($order_id)
-     		'order_total_in_fai', 	// meta key
-     		$order_total_in_fai 	// meta value. If array - will be auto-serialized
-     		);
-     	update_post_meta (
-     		$order_id, 			// post id ($order_id)
-     		'faircoins_address',	// meta key
-     		$faircoins_address 	// meta value. If array - will be auto-serialized
-     		);
-     	update_post_meta (
-     		$order_id, 			// post id ($order_id)
-     		'faircoins_paid_total',	// meta key
-     		"0" 	// meta value. If array - will be auto-serialized
-     		);
-     	update_post_meta (
-     		$order_id, 			// post id ($order_id)
-     		'faircoins_refunded',	// meta key
-     		"0" 	// meta value. If array - will be auto-serialized
-     		);
-     	update_post_meta (
-     		$order_id, 				// post id ($order_id)
-     		'_incoming_payments',	// meta key. Starts with '_' - hidden from UI.
-     		array()					// array (array('datetime'=>'', 'from_addr'=>'', 'amount'=>''),)
-     		);
-     	update_post_meta (
-     		$order_id, 				// post id ($order_id)
-     		'_payment_completed',	// meta key. Starts with '_' - hidden from UI.
-     		0					// array (array('datetime'=>'', 'from_addr'=>'', 'amount'=>''),)
-     		);
+		     	update_post_meta (
+     				$order_id, 			// post id ($order_id)
+		     		'order_total_in_fai', 	// meta key
+     				$order_total_in_fai 	// meta value. If array - will be auto-serialized
+				);
+		     	update_post_meta (
+     				$order_id, 			// post id ($order_id)
+		     		'faircoins_address',	// meta key
+     				$faircoins_address 	// meta value. If array - will be auto-serialized
+		     		);		
+		     	update_post_meta (
+     				$order_id, 			// post id ($order_id)
+		     		'faircoins_paid_total',	// meta key
+     				"0" 	// meta value. If array - will be auto-serialized
+     				);
+		     	update_post_meta (
+     				$order_id, 			// post id ($order_id)
+		     		'faircoins_refunded',	// meta key
+     				"0" 	// meta value. If array - will be auto-serialized
+		     		);
+     			update_post_meta (
+     				$order_id, 				// post id ($order_id)
+		     		'_incoming_payments',	// meta key. Starts with '_' - hidden from UI.
+     				array()					// array (array('datetime'=>'', 'from_addr'=>'', 'amount'=>''),)
+     				);
+     			update_post_meta (
+     				$order_id, 				// post id ($order_id)
+     				'_payment_completed',	// meta key. Starts with '_' - hidden from UI.
+     				0					// array (array('datetime'=>'', 'from_addr'=>'', 'amount'=>''),)
+     				);
 			//-----------------------------------
-
-
 			// The faircoin gateway does not take payment immediately, but it does need to change the orders status to on-hold
 			// (so the store owner knows that faircoin payment is pending).
 			// We also need to tell WooCommerce that it needs to redirect to the thankyou page – this is done with the returned array
 			// and the result being a success.
-			//
+
 			global $woocommerce;
 
-			//	Updating the order status:
-
-			// Mark as on-hold (we're awaiting for faircoins payment to arrive)
+			// Updating the order status:
+			// Mark as on-hold (we're awaiting for faircoins payment to arrive). Send email to customer and admin
 			$order->update_status('on-hold', __('Awaiting faircoin payment to arrive', 'woocommerce'));
 
 			// Remove cart
 			$woocommerce->cart->empty_cart();
 
 			// Empty awaiting payment session
-		 unset( $woocommerce->session->order_awaiting_payment );
+		        // unset( $woocommerce->session->order_awaiting_payment );
 
 			$url = $this->get_return_url( $order );
-                        FWWC__log_event(__FILE__, __LINE__, "New order : ".$order_id." FAI address : ".$faircoins_address." url : ".$url);
+                        wp_redirect( $url );
+			FWWC__log_event(__FILE__, __LINE__, "New order : ".$order_id." FAI address : ".$faircoins_address." url : ".$url);
 
-			 // Return thank you redirect
+//			wp_redirect( $url ); // Redirecting diretly, unknown errors before thank you 
+			// Return thank you redirect
                         return array(
-                              'result'         => 'success',
-                              'redirect'       => $url
+                              'result' => 'success',
+                              'redirect' => $url
                           );
 		}
 
@@ -619,10 +617,9 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
 	     * @return void
 	     */
 		function FWWC__thankyou_page($order_id)
-		{
+		 {
 		// FWWC__thankyou_page is hooked into the "thank you" page and in the simplest case can just echo’s the description.
-//	         $msg = "Begin thank you fair payment";
-//                        FWWC__log_event (__FILE__, __LINE__, $msg);
+                        FWWC__log_event (__FILE__, __LINE__, "Begin thank you");
 
 			// Get order object.
 			// http://wcdocs.woothemes.com/apidocs/class-WC_Order.html
@@ -636,19 +633,17 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
 			$instructions = $this->instructions;
 			$instructions = str_replace ('{{{FAIRCOINS_AMOUNT}}}',  $order_total_in_fai, $instructions);
 			$instructions = str_replace ('{{{FAIRCOINS_ADDRESS}}}', $faircoins_address, 	$instructions);
-			$instructions =
-				str_replace (
-					'{{{EXTRA_INSTRUCTIONS}}}',
+			$instructions =	str_replace ('{{{EXTRA_INSTRUCTIONS}}}',
            				$this->instructions_multi_payment_str,
 					$instructions
 					);
                 $order->add_order_note( __("Order instructions: price=&#3647;{$order_total_in_fai}, incoming account:{$faircoins_address}", 'woocommerce'));
-//                FWWC__log_event (__FILE__, __LINE__, $instructions);
+                FWWC__log_event (__FILE__, __LINE__, "end thank you");
 	        echo wpautop (wptexturize ($instructions));
 		}
-		//-------------------------------------------------------------------
+//-------------------------------------------------------------------
 
-		//-------------------------------------------------------------------
+//-------------------------------------------------------------------
 	    /**
 	     * Add content to the WC emails.
 	     *
@@ -657,35 +652,30 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
 	     * @param bool $sent_to_admin
 	     * @return void
 	     */
-		function FWWC__email_instructions ($order, $sent_to_admin)
-		{
-//	         $msg = "email";
-//               FWWC__log_event (__FILE__, __LINE__, $msg);
+	       function FWWC__email_instructions ($order, $sent_to_admin)
+	       {
+                 FWWC__log_event (__FILE__, __LINE__, "Begin email to admin : ".$sent_to_admin);
 
 	    	if ($sent_to_admin) return;
 	    	if (!in_array($order->status, array('pending', 'on-hold'), true)) return;
 	    	if ($order->payment_method !== 'faircoin') return;
 
 	    	// Assemble payment instructions for email
-			$order_total_in_fai   = get_post_meta($order->id, 'order_total_in_fai',   true); // set single to true to receive properly unserialized array
-			$faircoins_address = get_post_meta($order->id, 'faircoins_address', true); // set single to true to receive properly unserialized array
+		$order_total_in_fai   = get_post_meta($order->id, 'order_total_in_fai',   true); // set single to true to receive properly unserialized array
+		$faircoins_address = get_post_meta($order->id, 'faircoins_address', true); // set single to true to receive properly unserialized array
 
 
-			$instructions = $this->instructions;
-			$instructions = str_replace ('{{{FAIRCOINS_AMOUNT}}}',  $order_total_in_fai, 	$instructions);
-			$instructions = str_replace ('{{{FAIRCOINS_ADDRESS}}}', $faircoins_address, 	$instructions);
-			$instructions =
-				str_replace (
-					'{{{EXTRA_INSTRUCTIONS}}}',
-
+		$instructions = $this->instructions;
+		$instructions = str_replace ('{{{FAIRCOINS_AMOUNT}}}',  $order_total_in_fai, 	$instructions);
+		$instructions = str_replace ('{{{FAIRCOINS_ADDRESS}}}', $faircoins_address, 	$instructions);
+		$instructions =	str_replace ('{{{EXTRA_INSTRUCTIONS}}}',
 					$this->instructions_multi_payment_str,
-					$instructions
-					);
-
-			echo wpautop (wptexturize ($instructions));
+					$instructions  );
+                FWWC__log_event (__FILE__, __LINE__, "End email");
+                echo wpautop (wptexturize ($instructions));
 		}
 		//-------------------------------------------------------------------
-	}
+	} // End class
 	//-----------------------------------------------------------------------
 	// Hook into WooCommerce - add necessary hooks and filters
 	add_filter ('woocommerce_payment_gateways', 	'FWWC__add_faircoin_gateway' );
@@ -768,16 +758,15 @@ function FWWC__process_payment_completed_for_order ($order_id, $faircoins_paid=f
 {
 	if (!$order_id)
 		return false;
-
-//        FWWC__log_event (__FILE__, __LINE__, "Processing payment completed. Order : ".$order_id. "fairs :".$faircoins_paid);
+        FWWC__log_event (__FILE__, __LINE__, "Processing payment completed. Order : ".$order_id. "fairs :".$faircoins_paid);
         global $woocommerce;
 	$order = new WC_Order($order_id);
 	if ($faircoins_paid)
 	{
-//        FWWC__log_event (__FILE__, __LINE__, "Dentro del if...");
-        update_post_meta ($order_id, 'faircoins_paid_total', $faircoins_paid);
-	// Payment completed
-	// Make sure this logic is done only once, in case customer keep sending payments :)
+        	FWWC__log_event (__FILE__, __LINE__, "Dentro del if...");
+        	update_post_meta ($order_id, 'faircoins_paid_total', $faircoins_paid);
+		// Payment completed
+		// Make sure this logic is done only once, in case customer keep sending payments :)
 		if (!get_post_meta($order_id, '_payment_completed', true))
 		{
 			update_post_meta ($order_id, '_payment_completed', '1');
@@ -808,4 +797,4 @@ function FWWC__process_payment_completed_for_order ($order_id, $faircoins_paid=f
 	return false;
 }
 //===========================================================================
-}
+} // End function

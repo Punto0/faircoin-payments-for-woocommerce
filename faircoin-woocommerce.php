@@ -5,9 +5,9 @@
 Plugin Name: Faircoin Payments for WooCommerce
 Plugin URI: 
 Description: Faircoin Payments for WooCommerce plugin allows you to accept payments in faircoins for physical and digital products at your WooCommerce-powered online store.
-Version: 3.12
-Author: Punto0 Coop -- Forked from Bitcoinway
-Author URI: http://sareanweb.net
+Version: 0.1
+Author: Punto0
+Author URI: 
 License: GNU General Public License 2.0 (GPL) http://www.gnu.org/licenses/gpl.html
 
 */
