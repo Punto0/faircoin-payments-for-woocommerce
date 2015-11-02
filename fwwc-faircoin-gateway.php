@@ -93,6 +93,8 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
 
 			// Validate currently set currency for the store. Must be among supported ones.
 			if (!$this->FWWC__is_gateway_valid_for_use()) $this->enabled = false;
+                        //Add Payment method to admin email
+	                add_action( 'woocommerce_email_after_order_table', 'add_payment_method_to_admin_new_order', 15, 2 );
 	    	}
 		//-------------------------------------------------------------------
 
@@ -417,38 +419,38 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
 	    	?>
 			</table><!--/.form-table-->
 	    	<?php
-	    }
-		//-------------------------------------------------------------------
-
-		//-------------------------------------------------------------------
-	  // Hook into admin options saving.
-    public function process_admin_options()
-    {
-    	// Call parent
-    	parent::process_admin_options();
-
-    	if (isset($_POST) && is_array($_POST))
-    	{
-	  		$fwwc_settings = FWWC__get_settings ();
-	  		if (!isset($fwwc_settings['gateway_settings']) || !is_array($fwwc_settings['gateway_settings']))
-	  			$fwwc_settings['gateway_settings'] = array();
-
-	    	$prefix        = 'woocommerce_faircoin_';
-	    	$prefix_length = strlen($prefix);
-
-	    	foreach ($_POST as $varname => $varvalue)
-	    	{
-	    		if (strpos($varname, 'woocommerce_faircoin_') === 0)
-	    		{
-	    			$trimmed_varname = substr($varname, $prefix_length);
-	    			if ($trimmed_varname != 'description' && $trimmed_varname != 'instructions')
-	    				$fwwc_settings['gateway_settings'][$trimmed_varname] = $varvalue;
-	    		}
 	    	}
-	  	// Update gateway settings within BWWC own settings for easier access.
-		FWWC__update_settings ($fwwc_settings);
-	}
-    }
+		//-------------------------------------------------------------------
+
+		//-------------------------------------------------------------------
+	  	// Hook into admin options saving.
+    	    	public function process_admin_options()
+	    	{
+    	    		// Call parent
+    	    		parent::process_admin_options();
+
+    	    		if (isset($_POST) && is_array($_POST))
+    	    		{
+	    			$fwwc_settings = FWWC__get_settings ();
+	  			if (!isset($fwwc_settings['gateway_settings']) || !is_array($fwwc_settings['gateway_settings']))
+	  				$fwwc_settings['gateway_settings'] = array();
+
+	    			$prefix        = 'woocommerce_faircoin_';
+	    			$prefix_length = strlen($prefix);
+
+	    			foreach ($_POST as $varname => $varvalue)
+	    			{
+	    				if (strpos($varname, 'woocommerce_faircoin_') === 0)
+	    				{
+	    					$trimmed_varname = substr($varname, $prefix_length);
+	    					if ($trimmed_varname != 'description' && $trimmed_varname != 'instructions')
+	    						$fwwc_settings['gateway_settings'][$trimmed_varname] = $varvalue;
+	    				}
+	    			}
+	  			// Update gateway settings within FWWC own settings for easier access.
+				FWWC__update_settings ($fwwc_settings);
+			}
+    	   	}
 		//-------------------------------------------------------------------
 
 		//-------------------------------------------------------------------
@@ -487,7 +489,7 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
 			$order_total_in_fai   = sprintf ("%.8f", $order_total_in_fai);
 
   			$faircoins_address = false;
-	
+
   			$order_info =
   			array (
   				'order_id'				=> $order_id,
@@ -510,25 +512,26 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
 				$faircoins_address = @$ret_info_array['generated_faircoin_address'];
 			}*/
 			if ($this->service_provider == 'electrum-wallet')
-			{
-			// Generate faircoin address for electrum wallet provider.
-				/*
+		             // Generate faircoin address for electrum wallet provider.
+			     $ret_info_array = FWWC__get_faircoin_address_for_payment__electrum ($this->electrum_master_public_key, $order_info);
+
+/*
             $ret_info_array = array (
                'result'                      => 'success', // OR 'error'
                'message'										 => '...',
                'host_reply_raw'              => '......',
                'generated_faircoin_address'   => '1H9uAP3x439YvQDoKNGgSYCg3FmrYRzpD2', // or false
-               );
-				*/
+               ); */
 
-         			$ret_info_array = FWWC__get_faircoin_address_for_payment__electrum ($this->electrum_master_public_key, $order_info);
-			}
-                        $msg = "ret_info_array: ".$ret_info_array['result'].$ret_info_array['generated_faircoin_address'];
-                        FWWC__log_event (__FILE__, __LINE__, $msg); 
+
+
+
+//                        $msg = "ret_info_array: ".$ret_info_array['result']." ".$ret_info_array['generated_faircoin_address'];
+//                        FWWC__log_event (__FILE__, __LINE__, $msg); 
 
                         if ($ret_info_array['result'] == 'success')
 				    $faircoins_address = $ret_info_array['generated_faircoin_address'];
-                        FWWC__log_event (__FILE__, __LINE__, $faircoins_address);
+//                        FWWC__log_event (__FILE__, __LINE__, $faircoins_address);
 			if (!$faircoins_address)
 			{
 				$msg = "ERROR: cannot generate faircoin address for the order: " . @$ret_info_array['message'];
@@ -536,7 +539,7 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
       				exit ('<h2 style="color:red;">' . $msg . '</h2>');
 			}
 
-   		        FWWC__log_event (__FILE__, __LINE__, " Generated/found faircoin address: '{$faircoins_address}' for order_id " . $order_id);
+//   		        FWWC__log_event (__FILE__, __LINE__, " Generated/found faircoin address: '{$faircoins_address}' for order_id " . $order_id);
 /*
 			if ($this->service_provider == 'blockchain.info')
 			{
@@ -556,7 +559,7 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
      				$order_id, 			// post id ($order_id)
 		     		'faircoins_address',	// meta key
      				$faircoins_address 	// meta value. If array - will be auto-serialized
-		     		);		
+		     		);
 		     	update_post_meta (
      				$order_id, 			// post id ($order_id)
 		     		'faircoins_paid_total',	// meta key
@@ -596,15 +599,12 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
 		        // unset( $woocommerce->session->order_awaiting_payment );
 
 			$url = $this->get_return_url( $order );
-                        wp_redirect( $url );
-			FWWC__log_event(__FILE__, __LINE__, "New order : ".$order_id." FAI address : ".$faircoins_address." url : ".$url);
 
-//			wp_redirect( $url ); // Redirecting diretly, unknown errors before thank you 
-			// Return thank you redirect
-                        return array(
-                              'result' => 'success',
-                              'redirect' => $url
-                          );
+
+         		  // Return thank you redirect
+			$result = array('result' => 'success','redirect' => $url);
+FWWC__log_event(__FILE__, __LINE__, "Resultado payment : ".$result['result']." New order : ".$order_id." FAI address : ".$faircoins_address." Return url ".$result['redirect']);
+			return $result;
 		}
 
 		//-------------------------------------------------------------------
@@ -638,7 +638,7 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
 					$instructions
 					);
                 $order->add_order_note( __("Order instructions: price=&#3647;{$order_total_in_fai}, incoming account:{$faircoins_address}", 'woocommerce'));
-                FWWC__log_event (__FILE__, __LINE__, "end thank you");
+                FWWC__log_event (__FILE__, __LINE__, "end thank you: ".$instructions);
 	        echo wpautop (wptexturize ($instructions));
 		}
 //-------------------------------------------------------------------
@@ -676,6 +676,7 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
 		}
 		//-------------------------------------------------------------------
 	} // End class
+	//-------------------------------------------------------------------
 	//-----------------------------------------------------------------------
 	// Hook into WooCommerce - add necessary hooks and filters
 	add_filter ('woocommerce_payment_gateways', 	'FWWC__add_faircoin_gateway' );
@@ -753,48 +754,68 @@ function FWWC__plugins_loaded__load_faircoin_gateway ()
 	//=======================================================================
  	function FWWC__order_button_text () { return 'Continue'; }
 	//=======================================================================
-//===========================================================================
-function FWWC__process_payment_completed_for_order ($order_id, $faircoins_paid=false)
-{
-	if (!$order_id)
-		return false;
-        FWWC__log_event (__FILE__, __LINE__, "Processing payment completed. Order : ".$order_id. "fairs :".$faircoins_paid);
-        global $woocommerce;
-	$order = new WC_Order($order_id);
-	if ($faircoins_paid)
+	//===========================================================================
+	function FWWC__process_payment_completed_for_order ($order_id, $faircoins_paid=false)
 	{
-        	FWWC__log_event (__FILE__, __LINE__, "Dentro del if...");
-        	update_post_meta ($order_id, 'faircoins_paid_total', $faircoins_paid);
-		// Payment completed
-		// Make sure this logic is done only once, in case customer keep sending payments :)
-		if (!get_post_meta($order_id, '_payment_completed', true))
+		if (!$order_id)
+			return false;
+	//        FWWC__log_event (__FILE__, __LINE__, "Processing payment completed. Order : ".$order_id. " Fairs :".$faircoins_paid);
+        	global $woocommerce;
+		$order = new WC_Order($order_id);
+		if ($faircoins_paid)
 		{
-			update_post_meta ($order_id, '_payment_completed', '1');
-			FWWC__log_event (__FILE__, __LINE__, "Success: order '{$order_id}' paid in full. Processing and notifying customer ...");
-			// Instantiate order object.
-			$order->add_order_note( __('Order paid complete', 'woocommerce') );
-	                $order->payment_complete();
-                        // Mandamos factura
-			$email = new WC_Email_Customer_Invoice();
-			$email->trigger($order_id);
-//			$order->update_status('completed');//Para disparar el mail, ¿no hay otra forma?
-			return true;
+        		FWWC__log_event (__FILE__, __LINE__, "Dentro del if faircoins_paid ...");
+        		update_post_meta ($order_id, 'faircoins_paid_total', $faircoins_paid);
+			// Payment completed
+			// Make sure this logic is done only once, in case customer keep sending payments :)
+			if (!get_post_meta($order_id, '_payment_completed', true))
+			{
+				update_post_meta ($order_id, '_payment_completed', '1');
+				FWWC__log_event (__FILE__, __LINE__, "Success: order '{$order_id}' paid in full. Processing and notifying customer ...");
+
+				$order->add_order_note( __('Order paid complete', 'woocommerce') );
+	                	$order->payment_complete();
+                        	// Notificamos al usuario con factura
+				$email = new WC_Email_Customer_Invoice();
+				$email->trigger($order_id);
+				// Notificamos al admin
+		        	// ... //
+				// ... //
+				return true;
+			}
 		}
+		else
+		{
+			// Payment expired
+			if (!get_post_meta ($order_id, '_payment_completed', 1))
+			{
+				FWWC__log_event (__FILE__, __LINE__, "Order '{$order_id}' expired. Processing and notifying customer ...");
+
+				$order->add_order_note( __('Order paid expired', 'woocommerce') );
+		        	$order->update_status("failed",'No enough funds arrived at time');
+				// Notificamos al usuario
+//           			$email = new WC_Email_Cancelled_Order($order_id);
+//              		$email->trigger($order_id);
+				// Notificamos al admin
+				$email = new WC_Email_Admin_Cancelled_Order(); // No encuentra esta clase...
+				$email->trigger($order_id);
+				return true;
+			}
+			else // El pago se completa en el último momento o error 
+			{
+				FWWC__log_event (__FILE__, __LINE__, "El pago de esta orden ya ha sido completado ...");
+				return true; // Para limpiar la dirección 
+			}
+		}
+		return false;
 	}
-	else
+	//===========================================================================
+
+	function add_payment_method_to_admin_new_order( $order, $is_admin_email ) 
 	{
-// Payment expired
-		update_post_meta ($order_id, '_payment_completed', '0');
-		FWWC__log_event (__FILE__, __LINE__, "Order '{$order_id}' expired. Processing and notifying customer ...");
-		// Instantiate order object.
-		$order->add_order_note( __('Order paid expired', 'woocommerce') );
-	        $order->update_status("failed",'Not funds arrive at time');
-	// Aquí deberíamos notificar al usuario de alguna forma. ¿Extender WC-Email?
-//           	$email = new WC_Email_Cancelled_Order($order_id);
-//                $email->trigger($order_id);
-		return true;
-	}
-	return false;
-}
+        	if ( $is_admin_email )
+			echo '<p><strong>Payment Method:</strong> ' . $order->payment_method_title . '</p>';
+        }
+
 //===========================================================================
-} // End function
+} // End initial function
