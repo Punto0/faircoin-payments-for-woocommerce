@@ -610,7 +610,7 @@ function FWWC__get_exchange_rate_per_faircoin ($currency_code, $rate_retrieval_m
 	{
 	  if ($fair_rate) {
 			$msg = str_replace('{{{EXCHANGE_RATE}}}', $fair_rate, $ticker_string);			
-			FWWC__log_event (__FILE__, __LINE__, $msg);
+//			FWWC__log_event (__FILE__, __LINE__, $msg);
 			return str_replace('{{{EXCHANGE_RATE}}}', $fair_rate, $ticker_string);
 		} else
 		{
@@ -620,7 +620,7 @@ function FWWC__get_exchange_rate_per_faircoin ($currency_code, $rate_retrieval_m
 			if (count($fns))
 				$extra_error_message = "The following PHP functions are disabled on your server: " . implode (", ", $fns) . ".";
 			$msg = str_replace('{{{ERROR_MESSAGE}}}', $extra_error_message, $ticker_string_error);
-			FWWC__log_event (__FILE__, __LINE__, $msg);
+//			FWWC__log_event (__FILE__, __LINE__, $msg);
 			return str_replace('{{{ERROR_MESSAGE}}}', $extra_error_message, $ticker_string_error);
 		}
 	}

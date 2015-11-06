@@ -1,5 +1,5 @@
 === Faircoin Payments for WooCommerce ===
-Contributors: santi punto0 Coop -- Forked of Bitcoin Payments For Woocommerce of Bitcoinway
+Contributors: santi - Punto0 Coop
 Donate link:  
 Tags: faircoin, faircoin wordpress plugin, faircoin plugin, faircoin payments, accept faircoin, faircoins
 Requires at least: 3.0.1
@@ -38,7 +38,7 @@ Once you installed and activated WooCommerce, you may install and activate Bitco
 
 == Installation ==
 
-0.  Requeriments: pyfaircoin from Punt0 Coop (a fork of pycoin) and php-gmp must be installed in the system before the plugin install. 
+0.  Requeriments: pycoin and php-gmp must be installed in the system before the plugin install. 
 1.  Install WooCommerce plugin and configure your store (if you haven't done so already - http://wordpress.org/plugins/woocommerce/).
 2.  Install "Faircoin Payments for WooCommerce" wordpress plugin just like any other Wordpress plugin.
 3.  Activate.
@@ -71,7 +71,7 @@ Once you installed and activated WooCommerce, you may install and activate Bitco
 
 == Changelog ==
 
-== 3.12 ==
+== 0.1.0 ==
 
 * First Faircoin adapt
 * Uses only electrum mpk version 2 (BIP32 compatibles).
