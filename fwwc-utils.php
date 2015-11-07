@@ -559,7 +559,7 @@ function FWWC__generate_temporary_faircoin_address__blockchain_info ($forwarding
 
 function FWWC__get_exchange_rate_per_faircoin ($currency_code, $rate_retrieval_method = 'getfirst', $rate_type = 'vwap', $get_ticker_string)
 {
-//   FWWC__log_event (__FILE__, __LINE__,"Begin get_exchange");
+//   FWWC__log_event (__FILE__, __LINE__,"Begin get_exchange for ".$currency_code);
    if ($currency_code == 'FAI')
       return "1.00";   // 1:1
 
@@ -569,7 +569,7 @@ function FWWC__get_exchange_rate_per_faircoin ($currency_code, $rate_retrieval_m
 //      return false;
 
 	$fwwc_settings = FWWC__get_settings ();
-
+        $fair_rate = false;
 	$current_time  = time();
 	$cache_hit     = false;
 	$requested_cache_method_type = $rate_retrieval_method . '|' . $rate_type;
@@ -601,16 +601,18 @@ function FWWC__get_exchange_rate_per_faircoin ($currency_code, $rate_retrieval_m
 	  }
 	}
         else
-          FWWC__log_event (__FILE__, __LINE__,"No set, no looking for ".$requested_cache_method_type." rate in cache: ".$this_currency_info['exchange_rate']); 
+//          FWWC__log_event (__FILE__, __LINE__,"No set, no looking for ".$requested_cache_method_type." rate in cache: ".$this_currency_info['exchange_rate']); 
        // Chequeamos getfaircoin.net si no se ha disparado la cache
        $fair_rate = FWWC__get_exchange_rate_from_getfaircoin($currency_code, $rate_type, $fwwc_settings);
        if ($fair_rate)
          FWWC__update_exchange_rate_cache ($currency_code, 'getfirst|vwap', $fair_rate);
+       else
+	 return false;
        if ($get_ticker_string)
 	{
 	  if ($fair_rate) {
 			$msg = str_replace('{{{EXCHANGE_RATE}}}', $fair_rate, $ticker_string);			
-			FWWC__log_event (__FILE__, __LINE__, $msg);
+//			FWWC__log_event (__FILE__, __LINE__, $msg);
 			return str_replace('{{{EXCHANGE_RATE}}}', $fair_rate, $ticker_string);
 		} else
 		{
@@ -620,7 +622,7 @@ function FWWC__get_exchange_rate_per_faircoin ($currency_code, $rate_retrieval_m
 			if (count($fns))
 				$extra_error_message = "The following PHP functions are disabled on your server: " . implode (", ", $fns) . ".";
 			$msg = str_replace('{{{ERROR_MESSAGE}}}', $extra_error_message, $ticker_string_error);
-			FWWC__log_event (__FILE__, __LINE__, $msg);
+//			FWWC__log_event (__FILE__, __LINE__, $msg);
 			return str_replace('{{{ERROR_MESSAGE}}}', $extra_error_message, $ticker_string_error);
 		}
 	}

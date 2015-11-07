@@ -65,7 +65,7 @@ function FWWC_cron_job_worker ($hardcron=false)
   {
   	$ran_cycles = 0;
   	foreach ($rows_for_balance_check as $row_for_balance_check)
-  	{	
+  	{
   		$ran_cycles++;	// To limit number of cycles per soft cron job.
 
 		// Prepare 'address_meta' for use.
@@ -105,9 +105,9 @@ function FWWC_cron_job_worker ($hardcron=false)
                                          		 WHERE `id`='$row_id';";
                                 		$ret_code = $wpdb->query ($query);
                                 		continue;
-            				}        
+            				}
             				else
-            				{	
+            				{
               					// Metadata for this address is present. Mark this address as 'assigned' and treat it like that further down...
               					$query = "UPDATE `$fai_addresses_table_name`
                    					  SET `status` = 'assigned'
@@ -115,8 +115,8 @@ function FWWC_cron_job_worker ($hardcron=false)
               					$ret_code = $wpdb->query ($query);
 						continue;
             				 }
-		       		}	
-				FWWC__log_event (__FILE__, __LINE__, "Cron job: NOTE: Detected non-zero balance at address: '{$row_for_balance_check['fai_address']}, order ID = '{$last_order_info['order_id']}'. Detected balance ='{$balance_info_array['balance']}'.");
+		       		}
+//				FWWC__log_event (__FILE__, __LINE__, "Cron job: NOTE: Detected non-zero balance at address: '{$row_for_balance_check['fai_address']}, order ID = '{$last_order_info['order_id']}'. Detected balance ='{$balance_info_array['balance']}'.");
 
 			       if ($balance_info_array['balance'] < $last_order_info['order_total'])
          			     FWWC__log_event (__FILE__, __LINE__, "Cron job: NOTE: balance at address: '{$row_for_balance_check['fai_address']}' (FAI '{$balance_info_array['balance']}') is not yet sufficient to complete it's order (order ID = '{$last_order_info['order_id']}'). Total required: '{$last_order_info['order_total']}'. Will wait for more funds to arrive...");
@@ -140,9 +140,9 @@ function FWWC_cron_job_worker ($hardcron=false)
 		               ),
 		            'other_meta_info' => array (...)
 		         );*/
-		      
+
 	        			// Last order was fully paid! Complete it...
-				        FWWC__log_event (__FILE__, __LINE__, "Cron job: NOTE: Full payment for order ID '{$last_order_info['order_id']}' detected at address: '{$row_for_balance_check['fai_address']}' (FAI '{$balance_info_array['balance']}'). Total was required for this order: '{$last_order_info['order_total']}'. Processing order ...");
+//				        FWWC__log_event (__FILE__, __LINE__, "Cron job: NOTE: Full payment for order ID '{$last_order_info['order_id']}' detected at address: '{$row_for_balance_check['fai_address']}' (FAI '{$balance_info_array['balance']}'). Total was required for this order: '{$last_order_info['order_total']}'. Processing order ...");
 	        			// Update order' meta info
 				        $address_meta['orders'][0]['paid'] = false;
 					// Process and complete the order within WooCommerce (send confirmation emails, etc...)
@@ -169,14 +169,15 @@ function FWWC_cron_job_worker ($hardcron=false)
   } // End if is_array
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Search for expired  address
+// Ahora mismo la búsqueda de órdenes expiradas se hace mediante las address, pero sería más seguro hacerla mediante las órdenes pendientes, sobre todo por si se desactiva
+// y activa el plugin o se queda alguna orden sin procesar por algún fallo.
 
 
-
-//    $assigned_address_expires_in_secs = 130; // Debugging
-//    $funds_received_value_expires_in_secs = 130;
+//   $assigned_address_expires_in_secs = 100; // Debugging
+//   $funds_received_value_expires_in_secs = 50;
 
     $query = "SELECT * FROM `$fai_addresses_table_name`
-              WHERE ( `status`='assigned') 
+              WHERE ( `status`='assigned')
               AND ('$current_time' - `assigned_at`) > '$assigned_address_expires_in_secs'
               AND ('$current_time' - `received_funds_checked_at`) > '$funds_received_value_expires_in_secs';"; // Check the ones that haven't been checked for longest time
     $rows_for_check = $wpdb->get_results ($query, ARRAY_A);
@@ -184,10 +185,10 @@ function FWWC_cron_job_worker ($hardcron=false)
 
     if (is_array($rows_for_check))
   	$count_rows_for_check = count($rows_for_check);
-    else 
+    else
   	$count_rows_for_check = 0;
 
-//   FWWC__log_event (__FILE__, __LINE__,"Cron checking for expired orders  : ".$count_rows_for_check); 
+//    FWWC__log_event (__FILE__, __LINE__,"Cron checking for expired orders  : ".$count_rows_for_check);
     if (is_array($rows_for_check))
     {
   	foreach ($rows_for_check as $row_for_check)
@@ -204,8 +205,9 @@ function FWWC_cron_job_worker ($hardcron=false)
                         	FWWC__log_event(__FILE__,__LINE__,"Falló el procesamiento de la orden, ¿borrada desde wp?");
 				continue;
 			}
-	        	// Update address' record
-	        	$address_meta_serialized = FWWC_serialize_address_meta ($address_meta);
+
+			// Update address' record
+	        	//$address_meta_serialized = FWWC_serialize_address_meta ($address_meta);
 
 	        	// Update DB - mark address as 'unused'.
 	               	$query = "UPDATE `$fai_addresses_table_name`
