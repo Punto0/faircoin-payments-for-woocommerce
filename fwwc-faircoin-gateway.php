@@ -844,7 +844,7 @@ add_action( 'woocommerce_order_status_changed', 'FWWC_custom_status_messages', 1
 	//-------------------------------------------------------
 	// Echo the order table
 	//
-	function FWWC_echo_order_items_plain($order_id)
+	function FWWC_echo_order_items_html($order_id)
 	{
         global $woocommerce;
         $order = new  WC_Order($order_id);
