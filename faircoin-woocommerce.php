@@ -3,11 +3,11 @@
 
 
 Plugin Name: Faircoin Payments for WooCommerce
-Plugin URI: 
-Description: Faircoin Payments for WooCommerce plugin allows you to accept payments in faircoins for physical and digital products at your WooCommerce-powered online store.
-Version: 0.1
-Author: Punto0
-Author URI: 
+Plugin URI: https://github.com/Punto0/faircoin-payments-for-woocommerce
+Description: Faircoin Payments for WooCommerce plugin allows you to accept payments in faircoins for physical and digital products at your WooCommerce-powered online store. Forked from Bitcoin Payments for WooCommerce plugin from bitcoinway.com 
+Version: 0.01
+Author: Punto0 for the Faircoin fork - BitcoinWay for the original Bitcoin plugin
+Author URI: https://github.com/Punto0/faircoin-payments-for-woocommerce
 License: GNU General Public License 2.0 (GPL) http://www.gnu.org/licenses/gpl.html
 
 */
@@ -60,7 +60,7 @@ function FWWC_activate()
 
     if ($fwwc_settings['enable_soft_cron_job'] && !wp_next_scheduled('FWWC_cron_action'))
     {
-    	$cron_job_schedule_name = strpos($_SERVER['HTTP_HOST'], 'ttt.com')===FALSE ? $fwwc_settings['soft_cron_job_schedule_name'] : 'seconds_300';
+    	$cron_job_schedule_name = strpos($_SERVER['HTTP_HOST'], 'ttt.com')===FALSE ? $fwwc_settings['soft_cron_job_schedule_name'] : 'seconds_30';
     	wp_schedule_event(time(), $cron_job_schedule_name, 'FWWC_cron_action');
     }
     //----------------------------------
@@ -90,8 +90,6 @@ function FWWC_deactivate ()
    // Clear cron jobs
    wp_clear_scheduled_hook ('FWWC_cron_action');
    //----------------------------------
-   FWWC_uninstall();	
-
 }
 //===========================================================================
 
@@ -124,7 +122,8 @@ function FWWC_create_menu()
         'administrator',                                        // Capability
         'fwwc-settings',                                        // Handle - First submenu's handle must be equal to parent's handle to avoid duplicate menu entry.
         'FWWC__render_general_settings_page',                   // Function
-        plugins_url('/images/faircoin_px16.png', __FILE__)                // Icon URL
+
+        'https://fair-coin.org/sites/default/files/faircoin_favicon.png'      // Icon URL
         );
 
     add_submenu_page (
@@ -135,15 +134,15 @@ function FWWC_create_menu()
         'fwwc-settings',                                        // Handle - First submenu's handle must be equal to parent's handle to avoid duplicate menu entry.
         'FWWC__render_general_settings_page'                    // Function
         );
-
+    /*
     add_submenu_page (
         'fwwc-settings',                                        // Parent
-        __("FaircoinWay Plugin Advanced Settings", FWWC_I18N_DOMAIN),       // Page title
+        __("Faircoin Plugin Advanced Settings", FWWC_I18N_DOMAIN),       // Page title
         __("Advanced Settings", FWWC_I18N_DOMAIN),                // Menu title
         'administrator',                                        // Capability
         'fwwc-settings-advanced',                        // Handle - First submenu's handle must be equal to parent's handle to avoid duplicate menu entry.
         'FWWC__render_advanced_settings_page'            // Function
-        );
+        ); */
 }
 //===========================================================================
 
