@@ -35,7 +35,7 @@ class ElectrumFairHelper
             throw new ErrorException("Unknown Electrum version");
         }
 
-        return self::pubkey_to_bc_address($pubkey);
+        return self::pubkey_to_p2pkh($pubkey);
     }
 
     public static function mpkV1_to_pubkey($mpk, $index) {
@@ -377,7 +377,7 @@ class ElectrumFairHelper
     }
 
     public static function pubkey_to_bc_address($pubkey) {
-        return self::hash_160_to_bc_address(self::hash_160(hex2bin($pubkey)));
+        return self::hash_160_to_bc(self::hash_160(hex2bin($pubkey)));
     }
 
     public static function hash_160_to_bc_address($h160, $addrtype = self::NETWORK_CODE) {
@@ -386,6 +386,21 @@ class ElectrumFairHelper
         $addr = $vh160 . substr($h, 0, 4);
 
         return self::base58_encode($addr);
+    }
+
+    public static function pubkey_to_p2pkh($pubkey) {
+        return self::hash_160_to_p2pkh(self::hash_160(hex2bin($pubkey)));
+    }
+
+    public static function hash_160_to_p2pkh($h160, $addrtype = self::NETWORK_CODE) {
+        // OP_DUP OP_HASH160 [hash160(public_key)] OP_EQUALVERIFY OP_CHECKSIG
+        // OP_DUP : 118 0x76
+        // OP_HASH160 : 169 0xa9 // hash twice: SHA256 > RIPEMD-160
+        // OP_EQUALVERIFY: 136 0x88
+        //  OP_CHECKSIG: 172 0xac
+        $p2pkh =  sprintf("%b%b%b%b%b", 118 , 169 , $h160 , 136, 172);
+        $h256 = hash("sha256", $p2pkh, true);
+        return strrev($p2pkh);
     }
 
     public static function secp256k1_params() {

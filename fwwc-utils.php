@@ -537,11 +537,17 @@ function FWWC__getreceivedbyaddress_info ($address_request_array, $fwwc_settings
 function FWWC_stratum_get_balance ($fair_address, $api_timeout = '10')
 {
   $url = "electrumfair.punto0.org";
-  $port = "51811"; 
+  $port = "51812"; 
   // FWWC__log_event (__FILE__, __LINE__, "check balance for : " .$fair_address ."in " .$url.":".$port);
   $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+  if ($socket === false) {
+    FWWC__log_event (__FILE__, __LINE__, "socket_create() failed: reason: " . socket_strerror(socket_last_error()) . "\n");
+  }
   $conn = socket_connect($socket,  gethostbyname($url), $port);
-  $comando = '{"id": 1, "method": "blockchain.address.get_balance", "params": ["' .$fair_address . '"]}' . "\n";
+  if ($conn === false) {
+    FWWC__log_event (__FILE__, __LINE__, "socket_connect() failed.\nReason: ($result) " . socket_strerror(socket_last_error($socket)) . "\n");
+  }
+  $comando = '{"id": ' . rand(1, 65536) . ', "method": "blockchain.scripthash.get_balance", "params": ["' .$fair_address . '"]}' . "\n";
   socket_write($socket, $comando, strlen($comando));
   $resp = socket_read($socket, 1<<(10 * 2), PHP_NORMAL_READ);
   // FWWC__log_event (__FILE__, __LINE__, "resp : " . $resp);
